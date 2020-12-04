@@ -19,3 +19,6 @@
 💻 A collection of awk snippets.
   <br>
 </p>
+
+
+Note that the majority of these come from the learnbyexample Github repo. The reason why these are in my repo is due to me being lazy and this makes it easier to find for me. 
