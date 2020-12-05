@@ -62,3 +62,133 @@ qty
 90
 6
 ```
+
+<br>
+
+#### <a name="specifying-different-input-field-separator"></a>Specifying different input field separator
+
+* by using `-F` command line option
+* by setting `FS` variable
+* See [FPAT and FIELDWIDTHS](#fpat-and-fieldwidths) section for other ways of defining input fields
+
+```bash
+$ # second field where input field separator is :
+$ echo 'foo:123:bar:789' | awk -F: '{print $2}'
+123
+
+$ # last field
+$ echo 'foo:123:bar:789' | awk -F: '{print $NF}'
+789
+
+$ # first and last field
+$ # note the use of , and space between output fields
+$ echo 'foo:123:bar:789' | awk -F: '{print $1, $NF}'
+foo 789
+
+$ # second last field
+$ echo 'foo:123:bar:789' | awk -F: '{print $(NF-1)}'
+bar
+
+$ # use quotes to avoid clashes with shell special characters
+$ echo 'one;two;three;four' | awk -F';' '{print $3}'
+three
+```
+
+* Regular expressions based input field separator
+
+```bash
+$ echo 'Sample123string54with908numbers' | awk -F'[0-9]+' '{print $2}'
+string
+
+$ # first field will be empty as there is nothing before '{'
+$ echo '{foo}   bar=baz' | awk -F'[{}= ]+' '{print $1}'
+
+$ echo '{foo}   bar=baz' | awk -F'[{}= ]+' '{print $2}'
+foo
+$ echo '{foo}   bar=baz' | awk -F'[{}= ]+' '{print $3}'
+bar
+```
+
+* default input field separator is one or more of continuous space, tab or newline characters (will be termed as whitespace here on)
+    * exact same behavior if `FS` is assigned single space character
+* in addition, leading and trailing whitespaces won't be considered when splitting the input record
+
+```bash
+$ printf ' a    ate b\tc   \n'
+ a    ate b     c
+$ printf ' a    ate b\tc   \n' | awk '{print $1}'
+a
+$ printf ' a    ate b\tc   \n' | awk '{print NF}'
+4
+$ # same behavior if FS is assigned to single space character
+$ printf ' a    ate b\tc   \n' | awk -F' ' '{print $1}'
+a
+$ printf ' a    ate b\tc   \n' | awk -F' ' '{print NF}'
+4
+
+$ # for anything else, leading/trailing whitespaces will be considered
+$ printf ' a    ate b\tc   \n' | awk -F'[ \t]+' '{print $2}'
+a
+$ printf ' a    ate b\tc   \n' | awk -F'[ \t]+' '{print NF}'
+6
+```
+
+* assigning empty string to FS will split the input record character wise
+* note the use of command line option `-v` to set FS
+
+```bash
+$ echo 'apple' | awk -v FS= '{print $1}'
+a
+$ echo 'apple' | awk -v FS= '{print $2}'
+p
+$ echo 'apple' | awk -v FS= '{print $NF}'
+e
+
+$ # detecting multibyte characters depends on locale
+$ printf 'hi👍 how are you?' | awk -v FS= '{print $3}'
+👍
+```
+
+**Further Reading**
+
+* [gawk manual - Field Splitting Summary](https://www.gnu.org/software/gawk/manual/html_node/Field-Splitting-Summary.html#Field-Splitting-Summary)
+* [stackoverflow - explanation on default FS](https://stackoverflow.com/questions/30405694/default-field-separator-for-awk)
+* [unix.stackexchange - filter lines if it contains a particular character only once](https://unix.stackexchange.com/questions/362550/how-to-remove-line-if-it-contains-a-character-exactly-once)
+* [stackoverflow - Processing 2 files with different field separators](https://stackoverflow.com/questions/24516141/awk-processing-2-files-with-different-field-separators)
+
+<br>
+
+#### <a name="specifying-different-output-field-separator"></a>Specifying different output field separator
+
+* by setting `OFS` variable
+* also gets added between every argument to `print` statement
+    * use [printf](#printf-formatting) to avoid this
+* default is single space
+
+```bash
+$ # statements inside BEGIN are executed before processing any input text
+$ echo 'foo:123:bar:789' | awk 'BEGIN{FS=OFS=":"} {print $1, $NF}'
+foo:789
+$ # can also be set using command line option -v
+$ echo 'foo:123:bar:789' | awk -F: -v OFS=':' '{print $1, $NF}'
+foo:789
+
+$ # changing a field will re-build contents of $0
+$ echo ' a      ate b   ' | awk '{$2 = "foo"; print $0}' | cat -A
+a foo b$
+
+$ # $1=$1 is an idiomatic way to re-build when there is nothing else to change
+$ echo 'foo:123:bar:789' | awk -F: -v OFS='-' '{print $0}'
+foo:123:bar:789
+$ echo 'foo:123:bar:789' | awk -F: -v OFS='-' '{$1=$1; print $0}'
+foo-123-bar-789
+
+$ # OFS is used to separate different arguments given to print
+$ echo 'foo:123:bar:789' | awk -F: -v OFS='\t' '{print $1, $3}'
+foo     bar
+
+$ echo 'Sample123string54with908numbers' | awk -F'[0-9]+' '{$1=$1; print $0}'
+Sample string with numbers
+```
+
+<br>
