@@ -16,7 +16,7 @@
 ---
 
 <p align="center">
-💻 A collection of awk snippets, see Learnbyexample's Github page for more.
+💻 A collection of awk snippets, see Learnbyexample's Github page for more. I have gathered these for easier access. 
   <br>
 </p>
 
@@ -192,3 +192,37 @@ Sample string with numbers
 ```
 
 <br>
+
+## Field processing
+
+As mentioned before, `awk` is primarily used for field based processing. Consider the sample input file shown below with fields separated by a single space character.
+
+>The [learn_gnuawk repo](https://github.com/learnbyexample/learn_gnuawk/tree/master/example_files) has all the files used in examples.
+
+```bash
+$ cat table.txt
+brown bread mat hair 42
+blue cake mug shirt -7
+yellow banana window shoes 3.14
+```
+
+Here's some examples that is based on specific field rather than entire line. By default, `awk` splits the input line based on spaces and the field contents can be accessed using `$N` where `N` is the field number required. A special variable `NF` is updated with the total number of fields for each input line. There's more details to cover, but for now this is enough to proceed.
+
+```bash
+$ # print the second field of each input line
+$ awk '{print $2}' table.txt
+bread
+cake
+banana
+
+$ # print lines only if last field is a negative number
+$ # recall that default action is to print the contents of $0
+$ awk '$NF<0' table.txt
+blue cake mug shirt -7
+
+$ # change 'b' to 'B' only for the first field
+$ awk '{gsub(/b/, "B", $1)} 1' table.txt
+Brown bread mat hair 42
+Blue cake mug shirt -7
+yellow banana window shoes 3.14
+```
