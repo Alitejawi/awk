@@ -191,8 +191,6 @@ $ echo 'Sample123string54with908numbers' | awk -F'[0-9]+' '{$1=$1; print $0}'
 Sample string with numbers
 ```
 
-<br>
-
 ## Field processing
 
 As mentioned before, `awk` is primarily used for field based processing. Consider the sample input file shown below with fields separated by a single space character.
@@ -225,4 +223,52 @@ $ awk '{gsub(/b/, "B", $1)} 1' table.txt
 Brown bread mat hair 42
 Blue cake mug shirt -7
 yellow banana window shoes 3.14
+```
+
+
+## Strings and Numbers
+
+Some examples so far have already used string and numeric literals. As mentioned earlier, `awk` tries to provide a concise way to construct a solution from the command line. The data type of a value is determined based on the syntax used. String literals are represented inside double quotes. Numbers can be integers or floating point. Scientific notation is allowed as well. See [gawk manual: Constant Expressions](https://www.gnu.org/software/gawk/manual/gawk.html#Constants) for more details.
+
+```bash
+$ # BEGIN{} is also useful to write awk program without any external input
+$ awk 'BEGIN{print "hi"}'
+hi
+
+$ awk 'BEGIN{print 42}'
+42
+$ awk 'BEGIN{print 3.14}'
+3.14
+$ awk 'BEGIN{print 34.23e4}'
+342300
+```
+
+You can also save these literals in variables and use it later. Some variables are predefined, for example `NF`.
+
+```bash
+$ awk 'BEGIN{a=5; b=2.5; print a+b}'
+7.5
+
+$ # strings placed next to each other are concatenated
+$ awk 'BEGIN{s1="con"; s2="cat"; print s1 s2}'
+concat
+```
+
+If uninitialized variable is used, it will act as empty string in string context and `0` in numeric context. You can force a string to behave as a number by simply using it in an expression with numeric values. You can also use unary `+` or `-` operators. If the string doesn't start with a valid number (ignoring any starting whitespaces), it will be treated as `0`. Similarly, concatenating a string to a number will automatically change the number to string. See [gawk manual: How awk Converts Between Strings and Numbers](https://www.gnu.org/software/gawk/manual/gawk.html#Strings-And-Numbers) for more details.
+
+```bash
+$ # same as: awk 'BEGIN{sum=0} {sum += $NF} END{print sum}'
+$ awk '{sum += $NF} END{print sum}' table.txt
+38.14
+
+$ awk 'BEGIN{n1="5.0"; n2=5; if(n1==n2) print "equal"}'
+$ awk 'BEGIN{n1="5.0"; n2=5; if(+n1==n2) print "equal"}'
+equal
+$ awk 'BEGIN{n1="5.0"; n2=5; if(n1==n2".0") print "equal"}'
+equal
+
+$ awk 'BEGIN{print 5 + "abc 2 xyz"}'
+5
+$ awk 'BEGIN{print 5 + " \t 2 xyz"}'
+7
 ```
